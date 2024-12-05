@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Location Tracker</title>
+
+
+  <!-- Leaflet (OSM) CSS & JS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+  <style>
+    #map { height: 100vh; width: 100%; }
+  </style>
+</head>
+<body>
+
+  <div id="map"></div>
+
+  <script type="module">
+    // Initialize the map
+    const map = L.map('map').setView([8.4650278, 76.9793012], 13); // Default location (Chennai, India)
+
+    // Set up OSM tile layer
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+      import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
+      
+      // Firebase configuration
+      const firebaseConfig = {
+        apiKey: "AIzaSyAvNaJDApcA23fw06NbIQUq6qPc7WUk3Qc",
+        authDomain: "staff-tracker-62e82.firebaseapp.com",
+        databaseURL: "https://staff-tracker-62e82-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "staff-tracker-62e82",
+        storageBucket: "staff-tracker-62e82.firebasestorage.app",
+        messagingSenderId: "701401180006",
+        appId: "1:701401180006:web:958920e3e4d96576bc8aa7"
+      };
+  
+      // Initialize Firebase
+      const app = initializeApp(firebaseConfig);
+      const database = getDatabase(app);
+  
+      // Reference to the location of the users
+      const usersRef = ref(database, 'users/');
+  
+      // Markers storage
+      let markers = {};
+  
+      // Update map in real-time
+      onValue(usersRef, (snapshot) => {
+        const users = snapshot.val();
+        if (users) {
+          updateMap(users);
+        }
+      });
+  
+      function updateMap(users) {
+        for (const userId in users) {
+          const user = users[userId];
+          const location = user.location;
+  
+          if (location) {
+            const { latitude, longitude } = location;
+  
+            if (!markers[userId]) {
+              const marker = L.marker([latitude, longitude]).addTo(map)
+                .bindPopup(`<b>User ID:</b> ${userId}<br><b>Latitude:</b> ${latitude}<br><b>Longitude:</b> ${longitude}`);
+              markers[userId] = marker;
+            } else {
+              markers[userId].setLatLng([latitude, longitude]);
+            }
+          }
+        }
+      }
+    </script>
+  
+</body>
+</html>
